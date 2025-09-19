@@ -303,7 +303,7 @@ def main():
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
     if 'folder_path' not in st.session_state:
-        st.session_state.folder_path = ""
+        st.session_state.folder_path = "./pdfs"
     
     # Sidebar configuration
     with st.sidebar:
@@ -320,16 +320,16 @@ def main():
             st.session_state.assistant = DocumentAssistant(api_key)
             st.success(" Assistant initialized!")
         
-        st.header("PDF Folder Processing")
+        # st.header("PDF Folder Processing")
         
-        # Folder path input
-        folder_path = st.text_input(
-            "PDF Folder Path",
-            value="./pdfs",
-            help="Enter the path to your PDF folder (e.g., ./pdfs, C:/documents/pdfs)"
-        )
-        
-        st.session_state.folder_path = folder_path
+        # # Folder path input
+        # folder_path = st.text_input(
+        #     "PDF Folder Path",
+        #     value="./pdfs",
+        #     help="Enter the path to your PDF folder (e.g., ./pdfs, C:/documents/pdfs)"
+        # )
+        folder_path = "./pdfs"
+        # st.session_state.folder_path = folder_path
         
         # Process folder button
         if st.button("Process PDF Folder", disabled=not api_key):
