@@ -287,12 +287,12 @@ Answer:"""
 
 def main():
     st.set_page_config(
-        page_title="PDF Folder RAG System",
+        page_title="CA assistant",
         page_icon="",
         layout="wide"
     )
     
-    st.title(" PDF Folder RAG System")
+    st.title(" CA Document Assistant")
     # st.subtitle("Ask questions about your PDF documents")
     
     # Initialize session state
