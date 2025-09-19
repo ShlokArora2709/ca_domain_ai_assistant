@@ -10,7 +10,8 @@ import glob
 from typing import List, Dict
 import re
 from datetime import datetime
-
+from dotenv import load_dotenv
+load_dotenv()
 # Document processing
 from sentence_transformers import SentenceTransformer
 import faiss
@@ -309,53 +310,33 @@ def main():
     with st.sidebar:
         st.header(" Configuration")
         
-        # API Key input
-        api_key = st.text_input(
-            "Gemini API Key",
-            type="password",
-            help="Enter your Google Gemini API key"
-        )
-        
-        if api_key and not st.session_state.assistant:
-            st.session_state.assistant = DocumentAssistant(api_key)
-            st.success(" Assistant initialized!")
-        
-        # st.header("PDF Folder Processing")
-        
-        # # Folder path input
-        # folder_path = st.text_input(
-        #     "PDF Folder Path",
-        #     value="./pdfs",
-        #     help="Enter the path to your PDF folder (e.g., ./pdfs, C:/documents/pdfs)"
+        # # API Key input
+        # api_key = st.text_input(
+        #     "Gemini API Key",
+        #     type="password",
+        #     help="Enter your Google Gemini API key"
         # )
-        folder_path = "./pdfs"
-        # st.session_state.folder_path = folder_path
         
-        # Process folder button
-        if st.button("Process PDF Folder", disabled=not api_key):
-            if not api_key:
-                st.error("Please provide API key first!")
-            elif not folder_path.strip():
-                st.error("Please provide folder path!")
+        # Initialize assistant with API key from environment
+        if not st.session_state.assistant:
+            api_key_env = os.getenv("GEMINI_API_KEY")
+            if not api_key_env:
+                st.error("❌ GEMINI_API_KEY environment variable not found!")
+                st.info("Please set the GEMINI_API_KEY environment variable")
+                return
+            
+            st.session_state.assistant = DocumentAssistant(api_key_env)
+            st.success("✅ Assistant initialized!")
+        
+        # Auto-load index on startup
+        if st.session_state.assistant and not st.session_state.documents_processed:
+            index_path = "./indexes/pdf_index"
+            if os.path.exists(f"{index_path}.index") and os.path.exists(f"{index_path}.metadata"):
+                if st.session_state.assistant.rag_pipeline.load_index(index_path):
+                    st.session_state.documents_processed = True
+                    st.success("✅ Index loaded automatically!")
             else:
-                process_pdf_folder(folder_path)
-        
-        # Save/Load index
-        st.header("Index Management")
-        
-        index_name = st.text_input("Index Name", value="pdf_index")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Save Index"):
-                if st.session_state.assistant and st.session_state.documents_processed:
-                    st.session_state.assistant.rag_pipeline.save_index(f"./indexes/{index_name}")
-        
-        with col2:
-            if st.button("Load Index"):
-                if st.session_state.assistant:
-                    if st.session_state.assistant.rag_pipeline.load_index(f"./indexes/{index_name}"):
-                        st.session_state.documents_processed = True
+                st.warning("⚠️ No saved index found. Please process documents first.")
         
         # Document stats
         if st.session_state.documents_processed and st.session_state.assistant:
@@ -386,16 +367,16 @@ def main():
                     st.bar_chart(source_counts)
     
     # Main interface
-    if not api_key:
-        st.warning(" Please provide your Gemini API key in the sidebar to get started.")
-        st.info("""
-        **How to get a Gemini API key:**
-        1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-        2. Create a new API key
-        3. Copy and paste it in the sidebar
-        """)
-        return
-    
+    # if not api_key:
+    #     st.warning(" Please provide your Gemini API key in the sidebar to get started.")
+    #     st.info("""
+    #     **How to get a Gemini API key:**
+    #     1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+    #     2. Create a new API key
+    #     3. Copy and paste it in the sidebar
+    #     """)
+    #     return
+    folder_path="./pdfs"
     if not st.session_state.documents_processed:
         st.info("Please process your PDF folder to start querying.")
         
